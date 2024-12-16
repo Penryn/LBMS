@@ -3,22 +3,22 @@
 
 class Menu {
 public:
-    // ³õÊ¼²Ëµ¥
+    // åˆå§‹èœå•
     static void Start();
 
-    // Ö÷²Ëµ¥
+    // ä¸»èœå•
     static void Main();
 
-    // ²éÕÒ²Ëµ¥
+    // æŸ¥æ‰¾èœå•
     static void Find();
 
-    // ¸üĞÂ²Ëµ¥
+    // æ›´æ–°èœå•
     static void Update();
 
-    // É¾³ı²Ëµ¥
+    // åˆ é™¤èœå•
     static void Remove();
 
-    // ½è³ö»ò¹é»¹²Ëµ¥
+    // å€Ÿå‡ºæˆ–å½’è¿˜èœå•
     static void LendOrReturn();
 };
 

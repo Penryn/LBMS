@@ -6,14 +6,14 @@ using namespace std;
 
 class Book {
 private:
-    int id;             // ±àºÅ
-    string ISBN;        // ¹ú¼Ê±ê×¼ÊéºÅ
-    string name;        // ÊéÃû
-    string author;      // ×÷Õß
-    string publisher;   // ³ö°æÉç
-    int year;           // ³ö°æÄê·İ
-    bool borrowStatus;  // ½èÔÄ×´Ì¬ 0: ÔÚ¿âÖĞ, 1: ½èÔÄÖĞ
-    string borrower;    // ½èÔÄÈË
+    int id;             // ç¼–å·
+    string ISBN;        // å›½é™…æ ‡å‡†ä¹¦å·
+    string name;        // ä¹¦å
+    string author;      // ä½œè€…
+    string publisher;   // å‡ºç‰ˆç¤¾
+    int year;           // å‡ºç‰ˆå¹´ä»½
+    bool borrowStatus;  // å€Ÿé˜…çŠ¶æ€ 0: åœ¨åº“ä¸­, 1: å€Ÿé˜…ä¸­
+    string borrower;    // å€Ÿé˜…äºº
 
 public:
     Book();

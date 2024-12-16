@@ -53,13 +53,13 @@ istream& operator>>(istream& in, Book& book) {
 }
 ostream& operator<<(ostream& out, const Book& book) {
     if (typeid(out) == typeid(cout)) {
-        out << "Êé¼®±àºÅ: " << book.id << "  ISBN: " << book.ISBN
-            << "  Êé¼®Ãû³Æ: " << book.name << "  ×÷Õß: " << book.author
-            << "  ³ö°æÉç: " << book.publisher << "  ³ö°æÄê·Ý: " << book.year;
+        out << "ä¹¦ç±ç¼–å·: " << book.id << "  ISBN: " << book.ISBN
+            << "  ä¹¦ç±åç§°: " << book.name << "  ä½œè€…: " << book.author
+            << "  å‡ºç‰ˆç¤¾: " << book.publisher << "  å‡ºç‰ˆå¹´ä»½: " << book.year;
         if (book.borrowStatus) {
-            out << "  Êé¼®×´Ì¬: ½èÔÄÖÐ  ½èÔÄÈË: " << book.borrower;
+            out << "  ä¹¦ç±çŠ¶æ€: å€Ÿé˜…ä¸­  å€Ÿé˜…äºº: " << book.borrower;
         } else {
-            out << "  Êé¼®×´Ì¬: ÔÚ¿âÖÐ";
+            out << "  ä¹¦ç±çŠ¶æ€: åœ¨åº“ä¸­";
         }
     } else {
         out << book.id << " " << book.ISBN << " " << book.name << " "

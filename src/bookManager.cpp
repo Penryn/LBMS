@@ -1,6 +1,7 @@
 #include "bookManager.h"
 
 #include <fstream>
+#include <sstream>
 #include <iostream>
 using namespace std;
 
@@ -8,22 +9,42 @@ BookManager::BookManager() = default;
 
 BookManager::~BookManager() = default;
 
-void BookManager::Init() {
-    string file = "../data/book.txt";
+int BookManager::nextBookId = 1; // åˆå§‹åŒ–é™æ€å˜é‡
 
-    ifstream in;
-    in.open(file, ios::in);
+void BookManager::Init() {
+    string file = "../data/book.csv";
+
+    ifstream in(file);
     if (!in.is_open()) {
-        ofstream out;
-        out.open(file, ios::out | ios::app);
+        ofstream out(file);
         out.close();
-        in.open(file, ios::in);
+        in.open(file);
     }
 
-    Book book;
-    while (in.peek() != EOF) {
-        in >> book;
+    string line;
+    while (getline(in, line)) {
+        if (line.empty()) continue;
+
+        stringstream ss(line);
+        int id, year;
+        bool borrowStatus;
+        string ISBN, name, author, publisher, borrower;
+
+        getline(ss, line, ',');
+        id = stoi(line);
+        getline(ss, ISBN, ',');
+        getline(ss, name, ',');
+        getline(ss, author, ',');
+        getline(ss, publisher, ',');
+        getline(ss, line, ',');
+        year = stoi(line);
+        getline(ss, line, ',');
+        borrowStatus = (line == "1");
+        getline(ss, borrower, ',');
+
+        Book book(id, ISBN, name, author, publisher, year, borrowStatus, borrower);
         bookManager.insertUnique(bookManager.end(), book);
+        nextBookId++;
     }
 
     in.close();
@@ -33,23 +54,27 @@ void BookManager::Insert() {
     string ISBN, name, author, publisher;
     int year, count;
 
-    cout << "ÇëÊäÈëISBNºÅ: ";
+    cout << "è¯·è¾“å…¥ISBNå·: ";
     cin >> ISBN;
-    cout << "ÇëÊäÈëÊé¼®Ãû³Æ: ";
+    cout << "è¯·è¾“å…¥ä¹¦ç±åç§°: ";
     cin >> name;
-    cout << "ÇëÊäÈë×÷Õß: ";
+    cout << "è¯·è¾“å…¥ä½œè€…: ";
     cin >> author;
-    cout << "ÇëÊäÈë³ö°æÉç: ";
+    cout << "è¯·è¾“å…¥å‡ºç‰ˆç¤¾: ";
     cin >> publisher;
-    cout << "ÇëÊäÈë³ö°æÄê·Ý: ";
+    cout << "è¯·è¾“å…¥å‡ºç‰ˆå¹´ä»½: ";
     cin >> year;
-    cout << "ÇëÊäÈëÊýÁ¿: ";
-    cin >> count;
+    cout << "è¯·è¾“å…¥æ•°é‡: ";
+    while (!(cin >> count)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "è¾“å…¥çš„æ•°é‡ä¸åˆæ³•ï¼Œè¯·é‡æ–°è¾“å…¥: ";
+    }
 
-    cout << "ÇëÈ·ÈÏÊé¼®ÐÅÏ¢ (ÊäÈëy/yesÈ·ÈÏ) : " << endl
-         << "ISBN: " << ISBN << "  Êé¼®Ãû³Æ: " << name << "  ×÷Õß: " << author
-         << "  ³ö°æÉç: " << publisher << "  ³ö°æÄê·Ý: " << year
-         << "  ÊýÁ¿: " << count << "\n> ";
+    cout << "è¯·ç¡®è®¤ä¹¦ç±ä¿¡æ¯ (è¾“å…¥y/yesç¡®è®¤) : " << endl
+         << "ISBN: " << ISBN << "  ä¹¦ç±åç§°: " << name << "  ä½œè€…: " << author
+         << "  å‡ºç‰ˆç¤¾: " << publisher << "  å‡ºç‰ˆå¹´ä»½: " << year
+         << "  æ•°é‡: " << count << "\n> ";
     string confirm;
     cin.get();
     getline(cin, confirm);
@@ -57,15 +82,15 @@ void BookManager::Insert() {
     if (confirm == "y" || confirm == "yes") {
         while (count--) {
             bookManager.insertUnique(bookManager.end(),
-                                     Book(bookManager.size() + 1, ISBN, name,
+                                     Book(nextBookId++, ISBN, name,
                                           author, publisher, year, false, ""));
         }
-        cout << "ÒÑ³É¹¦Ìí¼Ó" << endl;
+        cout << "å·²æˆåŠŸæ·»åŠ " << endl;
     } else {
-        cout << "ÒÑÈ¡ÏûÌí¼Ó" << endl;
+        cout << "å·²å–æ¶ˆæ·»åŠ " << endl;
     }
 
-    cout << "ÊÇ·ñ¼ÌÐøÌí¼Ó (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­æ·»åŠ  (è¾“å…¥y/yesç»§ç»­)\n> ";
     getline(cin, confirm);
     if (confirm == "y" || confirm == "yes") {
         Insert();
@@ -78,7 +103,7 @@ void BookManager::FindByPage(int currPage, int pageSize) {
     size_t size = bookManager.size();
     size_t totalPages = (size - 1) / pageSize + 1;
     if (currPage < 0 || currPage > totalPages) {
-        cout << "ÊäÈëÒ³ÊýÓÐÎó, ÇëÖØÐÂÊäÈë (ÍË³ö²é¿´ÊäÈë0)\n> ";
+        cout << "è¾“å…¥é¡µæ•°æœ‰è¯¯, è¯·é‡æ–°è¾“å…¥ (é€€å‡ºæŸ¥çœ‹è¾“å…¥0)\n> ";
         if (cin >> currPage && currPage) {
             FindByPage(currPage, pageSize);
         }
@@ -97,8 +122,8 @@ void BookManager::FindByPage(int currPage, int pageSize) {
     }
     cout << "-----" << endl;
 
-    cout << "µ±Ç°µÚ " << currPage << " Ò³, ¹² " << totalPages
-         << " Ò³, ÇëÊäÈëÌø×ªÒ³ (ÍË³ö²é¿´ÊäÈë0)\n> ";
+    cout << "å½“å‰ç¬¬ " << currPage << " é¡µ, å…± " << totalPages
+         << " é¡µ, è¯·è¾“å…¥è·³è½¬é¡µ (é€€å‡ºæŸ¥çœ‹è¾“å…¥0)\n> ";
     if (cin >> currPage && currPage) {
         FindByPage(currPage, pageSize);
     }
@@ -106,17 +131,17 @@ void BookManager::FindByPage(int currPage, int pageSize) {
 
 void BookManager::FindByID() {
     int id;
-    cout << "ÇëÊäÈëÒª²éÑ¯µÄÊé¼®±àºÅ: ";
+    cout << "è¯·è¾“å…¥è¦æŸ¥è¯¢çš„ä¹¦ç±ç¼–å·: ";
     cin >> id;
 
     auto it = bookManager.find(id);
     if (it != bookManager.end()) {
         cout << *it << endl;
     } else {
-        cout << "¸ÃÊé¼®±àºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ä¹¦ç±ç¼–å·ä¸å­˜åœ¨" << endl;
     }
 
-    cout << "ÊÇ·ñ¼ÌÐø²éÑ¯ (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­æŸ¥è¯¢ (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     cin.get();
     getline(cin, confirm);
@@ -127,7 +152,7 @@ void BookManager::FindByID() {
 
 void BookManager::FindByISBN() {
     string ISBN;
-    cout << "ÇëÊäÈëÒª²éÑ¯µÄÊé¼®ISBNºÅ: ";
+    cout << "è¯·è¾“å…¥è¦æŸ¥è¯¢çš„ä¹¦ç±ISBNå·: ";
     cin >> ISBN;
 
     bool find = false;
@@ -137,15 +162,15 @@ void BookManager::FindByISBN() {
         if (it->GetISBN() == ISBN) {
             if (!find) {
                 cout << "ISBN: " << it->GetISBN()
-                     << "  Êé¼®Ãû³Æ: " << it->GetName()
-                     << "  ×÷Õß: " << it->GetAuthor()
-                     << "  ³ö°æÉç: " << it->GetPublisher()
-                     << "  ³ö°æÄê·Ý: " << it->GetYear() << endl;
+                     << "  ä¹¦ç±åç§°: " << it->GetName()
+                     << "  ä½œè€…: " << it->GetAuthor()
+                     << "  å‡ºç‰ˆç¤¾: " << it->GetPublisher()
+                     << "  å‡ºç‰ˆå¹´ä»½: " << it->GetYear() << endl;
                 find = true;
             }
             if (it->GetBorrowStatus()) {
-                cout << "Êé¼®±àºÅ: " << it->GetId()
-                     << "  ½èÔÄÈË: " << it->GetBorrower() << endl;
+                cout << "ä¹¦ç±ç¼–å·: " << it->GetId()
+                     << "  å€Ÿé˜…äºº: " << it->GetBorrower() << endl;
                 ++outCount;
             } else {
                 ++inCount;
@@ -154,16 +179,16 @@ void BookManager::FindByISBN() {
         ++it;
     }
     if (find) {
-        cout << "¹² " << inCount + outCount << " ±¾  ";
+        cout << "å…± " << inCount + outCount << " æœ¬  ";
         if (outCount) {
-            cout << "½èÔÄÖÐ: " << outCount << "±¾  ";
+            cout << "å€Ÿé˜…ä¸­: " << outCount << "æœ¬  ";
         }
-        cout << "ÔÚ¿âÖÐ: " << inCount << "±¾" << endl;
+        cout << "åœ¨åº“ä¸­: " << inCount << "æœ¬" << endl;
     } else {
-        cout << "¸ÃISBNºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ISBNå·ä¸å­˜åœ¨" << endl;
     }
 
-    cout << "ÊÇ·ñ¼ÌÐø²éÑ¯ (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­æŸ¥è¯¢ (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     cin.get();
     getline(cin, confirm);
@@ -174,17 +199,17 @@ void BookManager::FindByISBN() {
 
 void BookManager::UpdateByID() {
     int id;
-    cout << "ÇëÊäÈëÒª¸üÐÂµÄÊé¼®±àºÅ: ";
+    cout << "è¯·è¾“å…¥è¦æ›´æ–°çš„ä¹¦ç±ç¼–å·: ";
     cin >> id;
 
     auto it = bookManager.find(id);
     if (it != bookManager.end()) {
-        cout << "Ô­Êé¼®ÐÅÏ¢: " << endl
-             << "ISBN: " << it->GetISBN() << "  Êé¼®Ãû³Æ: " << it->GetName()
-             << "  ×÷Õß: " << it->GetAuthor()
-             << "  ³ö°æÉç: " << it->GetPublisher()
-             << "  ³ö°æÄê·Ý: " << it->GetYear() << endl
-             << "ÊÇ·ñ¸üÐÂ (ÊäÈëy/yes¸üÐÂ)\n> ";
+        cout << "åŽŸä¹¦ç±ä¿¡æ¯: " << endl
+             << "ISBN: " << it->GetISBN() << "  ä¹¦ç±åç§°: " << it->GetName()
+             << "  ä½œè€…: " << it->GetAuthor()
+             << "  å‡ºç‰ˆç¤¾: " << it->GetPublisher()
+             << "  å‡ºç‰ˆå¹´ä»½: " << it->GetYear() << endl
+             << "æ˜¯å¦æ›´æ–° (è¾“å…¥y/yesæ›´æ–°)\n> ";
         string confirm;
         cin.get();
         getline(cin, confirm);
@@ -192,37 +217,37 @@ void BookManager::UpdateByID() {
             string updateISBN, updateName, updateAuthor, updatePublisher;
             int updateYear;
 
-            cout << "ÇëÊäÈë¸üÐÂºóµÄISBNºÅ (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„ISBNå· (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateISBN;
             if (updateISBN == "0") {
                 updateISBN = it->GetISBN();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄÊé¼®Ãû³Æ (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„ä¹¦ç±åç§° (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateName;
             if (updateName == "0") {
                 updateName = it->GetName();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄ×÷Õß (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„ä½œè€… (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateAuthor;
             if (updateAuthor == "0") {
                 updateAuthor = it->GetAuthor();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄ³ö°æÉç (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„å‡ºç‰ˆç¤¾ (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updatePublisher;
             if (updatePublisher == "0") {
                 updatePublisher = it->GetPublisher();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄ³ö°æÄê·Ý (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„å‡ºç‰ˆå¹´ä»½ (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateYear;
             if (updateYear == 0) {
                 updateYear = it->GetYear();
             }
 
-            cout << "ÇëÈ·ÈÏ¸üÐÂºóµÄÊé¼®ÐÅÏ¢ (ÊäÈëy/yesÈ·ÈÏ) : " << endl
-                 << "ISBN: " << updateISBN << "  Êé¼®Ãû³Æ: " << updateName
-                 << "  ×÷Õß: " << updateAuthor
-                 << "  ³ö°æÉç: " << updatePublisher
-                 << "  ³ö°æÄê·Ý: " << updateYear << "\n> ";
+            cout << "è¯·ç¡®è®¤æ›´æ–°åŽçš„ä¹¦ç±ä¿¡æ¯ (è¾“å…¥y/yesç¡®è®¤) : " << endl
+                 << "ISBN: " << updateISBN << "  ä¹¦ç±åç§°: " << updateName
+                 << "  ä½œè€…: " << updateAuthor
+                 << "  å‡ºç‰ˆç¤¾: " << updatePublisher
+                 << "  å‡ºç‰ˆå¹´ä»½: " << updateYear << "\n> ";
             cin.get();
             getline(cin, confirm);
             if (confirm == "y" || confirm == "yes") {
@@ -231,19 +256,19 @@ void BookManager::UpdateByID() {
                 it->SetAuthor(updateAuthor);
                 it->SetPublisher(updatePublisher);
                 it->SetYear(updateYear);
-                cout << "ÒÑ³É¹¦¸üÐÂ" << endl;
+                cout << "å·²æˆåŠŸæ›´æ–°" << endl;
             } else {
-                cout << "ÒÑÈ¡Ïû¸üÐÂ" << endl;
+                cout << "å·²å–æ¶ˆæ›´æ–°" << endl;
             }
         } else {
-            cout << "ÒÑÈ¡Ïû¸üÐÂ" << endl;
+            cout << "å·²å–æ¶ˆæ›´æ–°" << endl;
         }
     } else {
-        cout << "¸ÃÊé¼®±àºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ä¹¦ç±ç¼–å·ä¸å­˜åœ¨" << endl;
         cin.get();
     }
 
-    cout << "ÊÇ·ñ¼ÌÐø¸üÐÂ (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­æ›´æ–° (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     getline(cin, confirm);
     if (confirm == "y" || confirm == "yes") {
@@ -253,7 +278,7 @@ void BookManager::UpdateByID() {
 
 void BookManager::UpdateByISBN() {
     string ISBN;
-    cout << "ÇëÊäÈëÒª¸üÐÂµÄÊé¼®ISBNºÅ: ";
+    cout << "è¯·è¾“å…¥è¦æ›´æ–°çš„ä¹¦ç±ISBNå·: ";
     cin >> ISBN;
 
     bool find = false;
@@ -266,12 +291,12 @@ void BookManager::UpdateByISBN() {
         ++it;
     }
     if (find) {
-        cout << "Ô­Êé¼®ÐÅÏ¢: " << endl
-             << "ISBN: " << it->GetISBN() << "  Êé¼®Ãû³Æ: " << it->GetName()
-             << "  ×÷Õß: " << it->GetAuthor()
-             << "  ³ö°æÉç: " << it->GetPublisher()
-             << "  ³ö°æÄê·Ý: " << it->GetYear() << endl
-             << "ÊÇ·ñ¸üÐÂ (ÊäÈëy/yes¸üÐÂ)\n> ";
+        cout << "åŽŸä¹¦ç±ä¿¡æ¯: " << endl
+             << "ISBN: " << it->GetISBN() << "  ä¹¦ç±åç§°: " << it->GetName()
+             << "  ä½œè€…: " << it->GetAuthor()
+             << "  å‡ºç‰ˆç¤¾: " << it->GetPublisher()
+             << "  å‡ºç‰ˆå¹´ä»½: " << it->GetYear() << endl
+             << "æ˜¯å¦æ›´æ–° (è¾“å…¥y/yesæ›´æ–°)\n> ";
         string confirm;
         cin.get();
         getline(cin, confirm);
@@ -279,37 +304,37 @@ void BookManager::UpdateByISBN() {
             string updateISBN, updateName, updateAuthor, updatePublisher;
             int updateYear;
 
-            cout << "ÇëÊäÈë¸üÐÂºóµÄISBNºÅ (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„ISBNå· (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateISBN;
             if (updateISBN == "0") {
                 updateISBN = it->GetISBN();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄÊé¼®Ãû³Æ (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„ä¹¦ç±åç§° (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateName;
             if (updateName == "0") {
                 updateName = it->GetName();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄ×÷Õß (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„ä½œè€… (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateAuthor;
             if (updateAuthor == "0") {
                 updateAuthor = it->GetAuthor();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄ³ö°æÉç (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„å‡ºç‰ˆç¤¾ (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updatePublisher;
             if (updatePublisher == "0") {
                 updatePublisher = it->GetPublisher();
             }
-            cout << "ÇëÊäÈë¸üÐÂºóµÄ³ö°æÄê·Ý (²»¸üÐÂÊäÈë0): ";
+            cout << "è¯·è¾“å…¥æ›´æ–°åŽçš„å‡ºç‰ˆå¹´ä»½ (ä¸æ›´æ–°è¾“å…¥0): ";
             cin >> updateYear;
             if (updateYear == 0) {
                 updateYear = it->GetYear();
             }
 
-            cout << "ÇëÈ·ÈÏ¸üÐÂºóµÄÊé¼®ÐÅÏ¢ (ÊäÈëy/yesÈ·ÈÏ) : " << endl
-                 << "ISBN: " << updateISBN << "  Êé¼®Ãû³Æ: " << updateName
-                 << "  ×÷Õß: " << updateAuthor
-                 << "  ³ö°æÉç: " << updatePublisher
-                 << "  ³ö°æÄê·Ý: " << updateYear << "\n> ";
+            cout << "è¯·ç¡®è®¤æ›´æ–°åŽçš„ä¹¦ç±ä¿¡æ¯ (è¾“å…¥y/yesç¡®è®¤) : " << endl
+                 << "ISBN: " << updateISBN << "  ä¹¦ç±åç§°: " << updateName
+                 << "  ä½œè€…: " << updateAuthor
+                 << "  å‡ºç‰ˆç¤¾: " << updatePublisher
+                 << "  å‡ºç‰ˆå¹´ä»½: " << updateYear << "\n> ";
             cin.get();
             getline(cin, confirm);
 
@@ -324,19 +349,19 @@ void BookManager::UpdateByISBN() {
                     }
                     ++it;
                 }
-                cout << "ÒÑ³É¹¦¸üÐÂ" << endl;
+                cout << "å·²æˆåŠŸæ›´æ–°" << endl;
             } else {
-                cout << "ÒÑÈ¡Ïû¸üÐÂ" << endl;
+                cout << "å·²å–æ¶ˆæ›´æ–°" << endl;
             }
         } else {
-            cout << "ÒÑÈ¡Ïû¸üÐÂ" << endl;
+            cout << "å·²å–æ¶ˆæ›´æ–°" << endl;
         }
     } else {
-        cout << "¸ÃISBNºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ISBNå·ä¸å­˜åœ¨" << endl;
         cin.get();
     }
 
-    cout << "ÊÇ·ñ¼ÌÐø¸üÐÂ (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­æ›´æ–° (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     getline(cin, confirm);
     if (confirm == "y" || confirm == "yes") {
@@ -346,41 +371,41 @@ void BookManager::UpdateByISBN() {
 
 void BookManager::RemoveByID() {
     int id;
-    cout << "ÇëÊäÈëÒªÉ¾³ýµÄÊé¼®±àºÅ: ";
+    cout << "è¯·è¾“å…¥è¦åˆ é™¤çš„ä¹¦ç±ç¼–å·: ";
     cin >> id;
 
     auto it = bookManager.find(id);
     if (it != bookManager.end()) {
-        cout << "Êé¼®ÐÅÏ¢: " << endl
+        cout << "ä¹¦ç±ä¿¡æ¯: " << endl
              << *it << endl
-             << "ÊÇ·ñÉ¾³ý (ÊäÈëy/yesÉ¾³ý)\n> ";
+             << "æ˜¯å¦åˆ é™¤ (è¾“å…¥y/yesåˆ é™¤)\n> ";
         string confirm;
         cin.get();
         getline(cin, confirm);
         if (confirm == "y" || confirm == "yes") {
             if (it->GetBorrowStatus()) {
-                cout << "¸ÃÊé¼®ÒÑ³ö½è, ½èÔÄÈË: " << it->GetBorrower()
-                     << " , ÊÇ·ñÈ·ÈÏÉ¾³ý (ÊäÈëy/yesÈ·ÈÏ)\n> ";
+                cout << "è¯¥ä¹¦ç±å·²å‡ºå€Ÿ, å€Ÿé˜…äºº: " << it->GetBorrower()
+                     << " , æ˜¯å¦ç¡®è®¤åˆ é™¤ (è¾“å…¥y/yesç¡®è®¤)\n> ";
                 getline(cin, confirm);
                 if (confirm == "y" || confirm == "yes") {
                     bookManager.erase(it);
-                    cout << "ÒÑ³É¹¦É¾³ý" << endl;
+                    cout << "å·²æˆåŠŸåˆ é™¤" << endl;
                 } else {
-                    cout << "ÒÑÈ¡ÏûÉ¾³ý" << endl;
+                    cout << "å·²å–æ¶ˆåˆ é™¤" << endl;
                 }
             } else {
                 bookManager.erase(it);
-                cout << "ÒÑ³É¹¦É¾³ý" << endl;
+                cout << "å·²æˆåŠŸåˆ é™¤" << endl;
             }
         } else {
-            cout << "ÒÑÈ¡ÏûÉ¾³ý" << endl;
+            cout << "å·²å–æ¶ˆåˆ é™¤" << endl;
         }
     } else {
-        cout << "¸ÃÊé¼®±àºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ä¹¦ç±ç¼–å·ä¸å­˜åœ¨" << endl;
         cin.get();
     }
 
-    cout << "ÊÇ·ñ¼ÌÐøÉ¾³ý (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­åˆ é™¤ (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     getline(cin, confirm);
     if (confirm == "y" || confirm == "yes") {
@@ -390,7 +415,7 @@ void BookManager::RemoveByID() {
 
 void BookManager::RemoveByISBN() {
     string ISBN;
-    cout << "ÇëÊäÈëÒªÉ¾³ýµÄÊé¼®ISBNºÅ: ";
+    cout << "è¯·è¾“å…¥è¦åˆ é™¤çš„ä¹¦ç±ISBNå·: ";
     cin >> ISBN;
 
     bool find = false;
@@ -403,12 +428,12 @@ void BookManager::RemoveByISBN() {
         ++it;
     }
     if (find) {
-        cout << "Êé¼®ÐÅÏ¢: " << endl
-             << "ISBN: " << it->GetISBN() << "  Êé¼®Ãû³Æ: " << it->GetName()
-             << "  ×÷Õß: " << it->GetAuthor()
-             << "  ³ö°æÉç: " << it->GetPublisher()
-             << "  ³ö°æÄê·Ý: " << it->GetYear() << endl
-             << "ÊÇ·ñÉ¾³ý (ÊäÈëy/yesÉ¾³ý)\n> ";
+        cout << "ä¹¦ç±ä¿¡æ¯: " << endl
+             << "ISBN: " << it->GetISBN() << "  ä¹¦ç±åç§°: " << it->GetName()
+             << "  ä½œè€…: " << it->GetAuthor()
+             << "  å‡ºç‰ˆç¤¾: " << it->GetPublisher()
+             << "  å‡ºç‰ˆå¹´ä»½: " << it->GetYear() << endl
+             << "æ˜¯å¦åˆ é™¤ (è¾“å…¥y/yesåˆ é™¤)\n> ";
         string confirm;
         cin.get();
         getline(cin, confirm);
@@ -418,9 +443,9 @@ void BookManager::RemoveByISBN() {
                 --it;
                 if (it->GetISBN() == ISBN) {
                     if (it->GetBorrowStatus()) {
-                        cout << "Êé¼®±àºÅ: " << it->GetId()
-                             << " ÒÑ³ö½è, ½èÔÄÈË: " << it->GetBorrower()
-                             << " , ÊÇ·ñÉ¾³ý (ÊäÈëy/yesÉ¾³ý)\n> ";
+                        cout << "ä¹¦ç±ç¼–å·: " << it->GetId()
+                             << " å·²å‡ºå€Ÿ, å€Ÿé˜…äºº: " << it->GetBorrower()
+                             << " , æ˜¯å¦åˆ é™¤ (è¾“å…¥y/yesåˆ é™¤)\n> ";
                         getline(cin, confirm);
                         if (confirm == "y" || confirm == "yes") {
                             bookManager.erase(it);
@@ -431,16 +456,16 @@ void BookManager::RemoveByISBN() {
                 }
                 it = itAfter;
             }
-            cout << "ÒÑÍê³ÉÉ¾³ý" << endl;
+            cout << "å·²å®Œæˆåˆ é™¤" << endl;
         } else {
-            cout << "ÒÑÈ¡ÏûÉ¾³ý" << endl;
+            cout << "å·²å–æ¶ˆåˆ é™¤" << endl;
         }
     } else {
-        cout << "¸ÃISBNºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ISBNå·ä¸å­˜åœ¨" << endl;
         cin.get();
     }
 
-    cout << "ÊÇ·ñ¼ÌÐøÉ¾³ý (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­åˆ é™¤ (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     getline(cin, confirm);
     if (confirm == "y" || confirm == "yes") {
@@ -452,22 +477,22 @@ void BookManager::Lend() {
     int id;
     string borrower;
 
-    cout << "ÇëÊäÈëÒª½è³öµÄÊé¼®±àºÅ: ";
+    cout << "è¯·è¾“å…¥è¦å€Ÿå‡ºçš„ä¹¦ç±ç¼–å·: ";
     cin >> id;
     auto it = bookManager.find(id);
     if (it != bookManager.end()) {
         if (it->GetBorrowStatus()) {
-            cout << "¸ÃÊé¼®ÒÑ½è³ö" << endl;
+            cout << "è¯¥ä¹¦ç±å·²å€Ÿå‡º" << endl;
             cin.get();
         } else {
-            cout << "ÇëÊäÈë½èÔÄÈË: ";
+            cout << "è¯·è¾“å…¥å€Ÿé˜…äºº: ";
             cin >> borrower;
-            cout << "ÇëÈ·ÈÏ½èÔÄÐÅÏ¢ (ÊäÈëy/yesÈ·ÈÏ): " << endl
-                 << "Êé¼®±àºÅ: " << id << "  ISBN: " << it->GetISBN()
-                 << "  Êé¼®Ãû³Æ: " << it->GetName()
-                 << "  ×÷Õß: " << it->GetAuthor()
-                 << "  ³ö°æÉç: " << it->GetPublisher()
-                 << "  ³ö°æÄê·Ý: " << it->GetYear() << "  ½èÔÄÈË: " << borrower
+            cout << "è¯·ç¡®è®¤å€Ÿé˜…ä¿¡æ¯ (è¾“å…¥y/yesç¡®è®¤): " << endl
+                 << "ä¹¦ç±ç¼–å·: " << id << "  ISBN: " << it->GetISBN()
+                 << "  ä¹¦ç±åç§°: " << it->GetName()
+                 << "  ä½œè€…: " << it->GetAuthor()
+                 << "  å‡ºç‰ˆç¤¾: " << it->GetPublisher()
+                 << "  å‡ºç‰ˆå¹´ä»½: " << it->GetYear() << "  å€Ÿé˜…äºº: " << borrower
                  << "\n> ";
             string confirm;
             cin.get();
@@ -475,17 +500,17 @@ void BookManager::Lend() {
             if (confirm == "y" || confirm == "yes") {
                 it->SetBorrowStatus(true);
                 it->SetBorrower(borrower);
-                cout << "ÒÑ³É¹¦½è³ö" << endl;
+                cout << "å·²æˆåŠŸå€Ÿå‡º" << endl;
             } else {
-                cout << "ÒÑÈ¡Ïû½è³ö" << endl;
+                cout << "å·²å–æ¶ˆå€Ÿå‡º" << endl;
             }
         }
     } else {
-        cout << "¸ÃÊé¼®±àºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ä¹¦ç±ç¼–å·ä¸å­˜åœ¨" << endl;
         cin.get();
     }
 
-    cout << "ÊÇ·ñ¼ÌÐø½è³ö (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­å€Ÿå‡º (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     getline(cin, confirm);
     if (confirm == "y" || confirm == "yes") {
@@ -495,38 +520,38 @@ void BookManager::Lend() {
 
 void BookManager::Return() {
     int id;
-    cout << "ÇëÊäÈëÒª¹é»¹µÄÊé¼®±àºÅ: ";
+    cout << "è¯·è¾“å…¥è¦å½’è¿˜çš„ä¹¦ç±ç¼–å·: ";
     cin >> id;
     auto it = bookManager.find(id);
     if (it != bookManager.end()) {
         if (!it->GetBorrowStatus()) {
-            cout << "¸ÃÊé¼®Î´½è³ö" << endl;
+            cout << "è¯¥ä¹¦ç±æœªå€Ÿå‡º" << endl;
             cin.get();
         } else {
-            cout << "ÇëÈ·ÈÏ¹é»¹ÐÅÏ¢ (ÊäÈëy/yesÈ·ÈÏ): " << endl
-                 << "Êé¼®±àºÅ: " << id << "  ISBN: " << it->GetISBN()
-                 << "  Êé¼®Ãû³Æ: " << it->GetName()
-                 << "  ×÷Õß: " << it->GetAuthor()
-                 << "  ³ö°æÉç: " << it->GetPublisher()
-                 << "  ³ö°æÄê·Ý: " << it->GetYear()
-                 << "  ½èÔÄÈË: " << it->GetBorrower() << "\n> ";
+            cout << "è¯·ç¡®è®¤å½’è¿˜ä¿¡æ¯ (è¾“å…¥y/yesç¡®è®¤): " << endl
+                 << "ä¹¦ç±ç¼–å·: " << id << "  ISBN: " << it->GetISBN()
+                 << "  ä¹¦ç±åç§°: " << it->GetName()
+                 << "  ä½œè€…: " << it->GetAuthor()
+                 << "  å‡ºç‰ˆç¤¾: " << it->GetPublisher()
+                 << "  å‡ºç‰ˆå¹´ä»½: " << it->GetYear()
+                 << "  å€Ÿé˜…äºº: " << it->GetBorrower() << "\n> ";
             string confirm;
             cin.get();
             getline(cin, confirm);
             if (confirm == "y" || confirm == "yes") {
                 it->SetBorrowStatus(false);
                 it->SetBorrower("");
-                cout << "ÒÑ³É¹¦¹é»¹" << endl;
+                cout << "å·²æˆåŠŸå½’è¿˜" << endl;
             } else {
-                cout << "ÒÑÈ¡Ïû¹é»¹" << endl;
+                cout << "å·²å–æ¶ˆå½’è¿˜" << endl;
             }
         }
     } else {
-        cout << "¸ÃÊé¼®±àºÅ²»´æÔÚ" << endl;
+        cout << "è¯¥ä¹¦ç±ç¼–å·ä¸å­˜åœ¨" << endl;
         cin.get();
     }
 
-    cout << "ÊÇ·ñ¼ÌÐø¹é»¹ (ÊäÈëy/yes¼ÌÐø)\n> ";
+    cout << "æ˜¯å¦ç»§ç»­å½’è¿˜ (è¾“å…¥y/yesç»§ç»­)\n> ";
     string confirm;
     getline(cin, confirm);
     if (confirm == "y" || confirm == "yes") {
@@ -544,29 +569,31 @@ void BookManager::FindAllLend() {
         ++it;
     }
     if (LendBook.Empty()) {
-        cout << "µ±Ç°Ã»ÓÐÒÑ½è³öµÄÊé¼®" << endl;
+        cout << "å½“å‰æ²¡æœ‰å·²å€Ÿå‡ºçš„ä¹¦ç±" << endl;
         return;
     }
     LendBook.FindByPage(1, 20);
 }
 
 void BookManager::Save() {
-    string filePath = "../data/book";
-    string fileType = ".txt";
+    const string filePath = "../data/book.csv";
 
-    ofstream out;
-    out.open(filePath + ".temp", ios::app);
+    ofstream out(filePath, ios::trunc);
     if (!out.is_open()) {
-        cout << "ÎÄ¼þ´ò¿ªÊ§°Ü" << endl;
+        cout << "æ–‡ä»¶æ‰“å¼€å¤±è´¥" << endl;
         return;
     }
 
-    auto it = bookManager.begin();
-    while (it != bookManager.end()) {
-        out << *(it++) << endl;
+    for (const auto& book : bookManager) {
+        out << book.GetId() << ","
+            << book.GetISBN() << ","
+            << book.GetName() << ","
+            << book.GetAuthor() << ","
+            << book.GetPublisher() << ","
+            << book.GetYear() << ","
+            << (book.GetBorrowStatus() ? "1" : "0") << ","
+            << book.GetBorrower() << endl;
     }
 
     out.close();
-    std::remove((filePath + fileType).c_str());
-    rename((filePath + ".temp").c_str(), (filePath + fileType).c_str());
 }

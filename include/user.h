@@ -6,8 +6,8 @@ using namespace std;
 
 class User {
 private:
-    string name;      // ÓÃ»§Ãû
-    string password;  // ÃÜÂë
+    string name;      // ç”¨æˆ·å
+    string password;  // å¯†ç 
 
 public:
     User();

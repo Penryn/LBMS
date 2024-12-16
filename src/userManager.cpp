@@ -1,26 +1,33 @@
 #include "userManager.h"
 
 #include <fstream>
+#include <sstream>
 
 UserManager::UserManager() = default;
 
 UserManager::~UserManager() = default;
 
 void UserManager::Init() {
-    string file = "../data/user.txt";
+    string file = "../data/user.csv";
 
-    ifstream in;
-    in.open(file, ios::in);
+    ifstream in(file);
     if (!in.is_open()) {
-        ofstream out;
-        out.open(file, ios::out | ios::app);
+        ofstream out(file);
         out.close();
-        in.open(file, ios::in);
+        in.open(file);
     }
 
-    User user;
-    while (in.peek() != EOF) {
-        in >> user;
+    string line;
+    while (getline(in, line)) {
+        if (line.empty()) continue;
+
+        stringstream ss(line);
+        string name, password;
+
+        getline(ss, name, ',');
+        getline(ss, password, ',');
+
+        User user(name, password);
         userManager.insertUnique(userManager.end(), user);
     }
 
@@ -28,76 +35,81 @@ void UserManager::Init() {
 }
 
 bool UserManager::Register() {
-    string secertKey, name, password, rePassword;
+    string secertKey,fileSecretKey, name, password, rePassword;
 
-    cout << "ÇëÊäÈëÃÜÔ¿: ";
+    // ä»Žæ–‡ä»¶ä¸­è¯»å–å¯†é’¥
+    string filePath = "../data/key.txt";
+    ifstream inFile(filePath);
+    if (!inFile.is_open()) {
+        cout << "æ— æ³•æ‰“å¼€å¯†é’¥æ–‡ä»¶" << endl;
+        return false;
+    }
+    getline(inFile, fileSecretKey);
+    inFile.close();
+
+    cout << "è¯·è¾“å…¥å¯†é’¥: ";
     cin >> secertKey;
-    if (secertKey != "vivo50") {
-        cout << "ÃÜÔ¿´íÎó" << endl;
+    if (secertKey != fileSecretKey) {
+        cout << "å¯†é’¥é”™è¯¯" << endl;
         return false;
     }
 
-    cout << "ÇëÊäÈëÓÃ»§Ãû: ";
+    cout << "è¯·è¾“å…¥ç”¨æˆ·å: ";
     cin >> name;
     if (userManager.find(name) != userManager.end()) {
-        cout << "¸ÃÓÃ»§ÃûÒÑ×¢²á" << endl;
+        cout << "è¯¥ç”¨æˆ·åå·²æ³¨å†Œ" << endl;
         return false;
     }
 
-    cout << "ÇëÊäÈëÃÜÂë: ";
+    cout << "è¯·è¾“å…¥å¯†ç : ";
     cin >> password;
-    cout << "ÇëÈ·ÈÏÃÜÂë: ";
+    cout << "è¯·ç¡®è®¤å¯†ç : ";
     cin >> rePassword;
     if (password != rePassword) {
-        cout << "ÃÜÂë²»Ò»ÖÂ" << endl;
+        cout << "å¯†ç ä¸ä¸€è‡´" << endl;
         return false;
     }
 
     User user(name, password);
     userManager.insertUnique(userManager.end(), user);
-    cout << "×¢²á³É¹¦" << endl;
+    cout << "æ³¨å†ŒæˆåŠŸ" << endl;
     return true;
 }
 
 bool UserManager::Login() {
     string name, password;
-    cout << "ÇëÊäÈëÓÃ»§Ãû: ";
+    cout << "è¯·è¾“å…¥ç”¨æˆ·å: ";
     cin >> name;
-    cout << "ÇëÊäÈëÃÜÂë: ";
+    cout << "è¯·è¾“å…¥å¯†ç : ";
     cin >> password;
 
     auto it = userManager.find(name);
     if (it == userManager.end()) {
-        cout << "ÓÃ»§Ãû»òÃÜÂë´íÎó" << endl;
+        cout << "ç”¨æˆ·åæˆ–å¯†ç é”™è¯¯" << endl;
         return false;
     }
 
     if ((*it).GetPassword() != password) {
-        cout << "ÓÃ»§Ãû»òÃÜÂë´íÎó" << endl;
+        cout << "ç”¨æˆ·åæˆ–å¯†ç é”™è¯¯" << endl;
         return false;
     }
 
-    cout << "µÇÂ½³É¹¦" << endl;
+    cout << "ç™»é™†æˆåŠŸ" << endl;
     return true;
 }
 
 void UserManager::Save() {
-    string filePath = "../data/user";
-    string fileType = ".txt";
+    const string filePath = "../data/user.csv";
 
-    ofstream out;
-    out.open(filePath + ".temp", ios::app);
+    ofstream out(filePath, ios::trunc);
     if (!out.is_open()) {
-        cout << "ÎÄ¼þ´ò¿ªÊ§°Ü" << endl;
+        cout << "æ–‡ä»¶æ‰“å¼€å¤±è´¥" << endl;
         return;
     }
 
-    auto it = userManager.begin();
-    while (it != userManager.end()) {
-        out << *(it++) << endl;
+    for (const auto& user : userManager) {
+        out << user.GetName() << "," << user.GetPassword() << endl;
     }
 
     out.close();
-    remove((filePath + fileType).c_str());
-    rename((filePath + ".temp").c_str(), (filePath + fileType).c_str());
 }

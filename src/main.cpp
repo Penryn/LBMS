@@ -26,7 +26,7 @@ int main() {
                         }
                         case 2: {
                             if (book.Empty()) {
-                                cout << "µ±Ç°Êé¼®Îª¿Õ" << endl;
+                                cout << "å½“å‰ä¹¦ç±ä¸ºç©º" << endl;
                                 break;
                             }
                             Menu::Find();
@@ -45,7 +45,7 @@ int main() {
                                         break;
                                     }
                                     default: {
-                                        cout << "ÊäÈëÓÐÎó, ÇëÖØÐÂÊäÈë" << endl;
+                                        cout << "è¾“å…¥æœ‰è¯¯, è¯·é‡æ–°è¾“å…¥" << endl;
                                         break;
                                     }
                                 }
@@ -55,7 +55,7 @@ int main() {
                         }
                         case 3: {
                             if (book.Empty()) {
-                                cout << "µ±Ç°Êé¼®Îª¿Õ" << endl;
+                                cout << "å½“å‰ä¹¦ç±ä¸ºç©º" << endl;
                                 break;
                             }
                             Menu::Update();
@@ -70,7 +70,7 @@ int main() {
                                         break;
                                     }
                                     default: {
-                                        cout << "ÊäÈëÓÐÎó, ÇëÖØÐÂÊäÈë" << endl;
+                                        cout << "è¾“å…¥æœ‰è¯¯, è¯·é‡æ–°è¾“å…¥" << endl;
                                         break;
                                     }
                                 }
@@ -80,7 +80,7 @@ int main() {
                         }
                         case 4: {
                             if (book.Empty()) {
-                                cout << "µ±Ç°Êé¼®Îª¿Õ" << endl;
+                                cout << "å½“å‰ä¹¦ç±ä¸ºç©º" << endl;
                                 break;
                             }
                             Menu::Remove();
@@ -95,7 +95,7 @@ int main() {
                                         break;
                                     }
                                     default: {
-                                        cout << "ÊäÈëÓÐÎó, ÇëÖØÐÂÊäÈë" << endl;
+                                        cout << "è¾“å…¥æœ‰è¯¯, è¯·é‡æ–°è¾“å…¥" << endl;
                                         break;
                                     }
                                 }
@@ -120,7 +120,7 @@ int main() {
                                         break;
                                     }
                                     default: {
-                                        cout << "ÊäÈëÓÐÎó, ÇëÖØÐÂÊäÈë" << endl;
+                                        cout << "è¾“å…¥æœ‰è¯¯, è¯·é‡æ–°è¾“å…¥" << endl;
                                         break;
                                     }
                                 }
@@ -129,7 +129,7 @@ int main() {
                             break;
                         }
                         default: {
-                            cout << "ÊäÈëÓÐÎó, ÇëÖØÐÂÊäÈë" << endl;
+                            cout << "è¾“å…¥æœ‰è¯¯, è¯·é‡æ–°è¾“å…¥" << endl;
                             break;
                         }
                     }
@@ -141,7 +141,7 @@ int main() {
                 break;
             }
             default: {
-                cout << "ÊäÈëÓÐÎó, ÇëÖØÐÂÊäÈë" << endl;
+                cout << "è¾“å…¥æœ‰è¯¯, è¯·é‡æ–°è¾“å…¥" << endl;
                 break;
             }
         }
@@ -150,7 +150,7 @@ int main() {
 
     user.Save();
     book.Save();
-    cout << "»¶Ó­ÏÂ´ÎÊ¹ÓÃ" << endl;
+    cout << "æ¬¢è¿Žä¸‹æ¬¡ä½¿ç”¨" << endl;
 
     return 0;
 }

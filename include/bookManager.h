@@ -12,52 +12,53 @@ private:
     typedef RbTree<int, Book, IdOfBook, std::less<>> RbTree;
 
     RbTree bookManager;
+    static int nextBookId; // 静态变量用于生成唯一 ID
 
 public:
     BookManager();
 
     ~BookManager();
 
-    // ��ʼ���鼮����
+    // 初始化书籍数据
     void Init();
 
-    // �����鼮
+    // 添加书籍
     void Insert();
 
-    // ��ǰ�鼮�Ƿ�Ϊ��
+    // 当前书籍是否为空
     bool Empty();
 
-    // ��ҳ��ѯ�����鼮
+    // 分页查询所有书籍
     void FindByPage(int currPage, int pageSize);
 
-    // �����鼮��Ų����鼮
+    // 根据书籍编号查找书籍
     void FindByID();
 
-    // ����ISBN�Ų����鼮
+    // 根据ISBN号查找书籍
     void FindByISBN();
 
-    // �����鼮��Ÿ����鼮��Ϣ
+    // 根据书籍编号更新书籍信息
     void UpdateByID();
 
-    // ����ISBN�Ÿ����鼮��Ϣ
+    // 根据ISBN号更新书籍信息
     void UpdateByISBN();
 
-    // �����鼮���ɾ���鼮
+    // 根据书籍编号删除书籍
     void RemoveByID();
 
-    // ����ISBN��ɾ���鼮
+    // 根据ISBN号删除书籍
     void RemoveByISBN();
 
-    // ����鼮
+    // 借出书籍
     void Lend();
 
-    // �黹�鼮
+    // 归还书籍
     void Return();
 
-    // �鿴�����ѽ�����鼮
+    // 查看所有已借出的书籍
     void FindAllLend();
 
-    // ��������
+    // 保存数据
     void Save();
 };
 
